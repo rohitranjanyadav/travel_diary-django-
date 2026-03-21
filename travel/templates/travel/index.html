@@ -1,3 +1,4 @@
+{% extends "travel/base.html" %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -6,13 +7,32 @@
     <title>Document</title>
   </head>
   <body>
+    {% block body %} 
     {% for place in place_list %}
+
+    <div class="row">
+      <div class="col-md-3 offset-md-2">
+        <img class="card" height="150px" src="{{ place.place_image }}" alt="">
+      </div>
+      <div class="col-md-4">
+        <h3>{{ place.place_name }}</h3>
+        <h5>{{ place.place_desc }}</h5>
+        <h6>Rs. {{ place.estimated_cost }}</h6>
+      </div>
+      <div class="col-md-2">
+        <a href="{% url 'travel:detail' place.id %}" class="btn btn-success">Details</a>
+      </div>
+    </div>
+
+    {% endfor %} 
+    {% endblock %}
     <ul>
       <li>
-        <a href="{% url 'travel:detail' place.id %}">{{place.id}} -- {{place.place_name}}</a>
-        
+        <a href=""
+          >{{place.id}} -- {{place.place_name}}</a
+        >
       </li>
     </ul>
-    {% endfor %}
+    
   </body>
 </html>
