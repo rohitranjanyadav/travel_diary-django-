@@ -1,3 +1,41 @@
-body{
+body {
   background-color: lightyellow;
+}
+
+.card {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Image zoom on card hover */
+.card-img-top {
+  transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.navbar-brand:hover {
+  color: #add8e6 !important;
+}
+
+/* scroll-effect */
+.navbar {
+  transition:
+    background 0.3s ease,
+    backdrop-filter 0.3s ease;
+}
+
+nav.navbar-glass {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(10px);
 }
