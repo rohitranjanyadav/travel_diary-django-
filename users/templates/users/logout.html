@@ -1,0 +1,10 @@
+{% extends 'travel/base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="alert alert-success" role="alert">
+        <h4 class="alert-heading">Logged Out Successfully!</h4>
+        <p>You have been logged out. <a href="{% url 'login' %}">Login again</a></p>
+    </div>
+</div>
+{% endblock %}
