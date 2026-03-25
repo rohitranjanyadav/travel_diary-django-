@@ -5,21 +5,102 @@
   <div class="card">
     <div class="row g-0">
       <div class="col-md-6">
-        <img src="{{ place.place_image }}" class="img-fluid rounded-start" alt="{{ place.place_name }}">
+        {% if object.place_image %}
+        <img src="{{ object.place_image.url }}" class="img-fluid rounded-start" alt="{{ object.place_name }}" loading="lazy">
+        {% else %}
+        <div class="d-flex align-items-center justify-content-center h-100 bg-body-tertiary p-4 text-muted">
+          Image not available
+        </div>
+        {% endif %}
       </div>
       <div class="col-md-6">
         <div class="card-body">
           <h5 class="card-title">{{ object.place_name }}</h5>
           <p class="card-text">{{ object.place_desc }}</p>
+          <p class="card-text"><small class="text-muted">Added on {{ object.created_at|date:"M d, Y h:i A" }}</small></p>
           <p class="card-text"><small class="text-muted">Estimated Cost: Rs. {{ object.estimated_cost }}</small></p>
-          <a href="{% url 'travel:update_place' place.id %}" class="btn btn-warning me-2">Edit</a>
+          <p class="card-text"><small class="text-muted">Region: {{ object.get_region_display }}</small></p>
+          <p class="card-text mb-1"><strong>Average Rating:</strong> {{ average_rating|floatformat:1 }}/5 ({{ review_count }} review{{ review_count|pluralize }})</p>
+          <p class="star-rating mb-3">
+            {% if average_rating >= 1 %}★{% else %}☆{% endif %}
+            {% if average_rating >= 2 %}★{% else %}☆{% endif %}
+            {% if average_rating >= 3 %}★{% else %}☆{% endif %}
+            {% if average_rating >= 4 %}★{% else %}☆{% endif %}
+            {% if average_rating >= 5 %}★{% else %}☆{% endif %}
+          </p>
+          {% if user == object.user_name %}
+          <a href="{% url 'travel:update_place' object.id %}" class="btn btn-warning me-2">Edit</a>
           <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
+          {% endif %}
           
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-body">
+      <h5 class="section-title">Reviews</h5>
+
+      {% if user.is_authenticated %}
+        {% if can_review %}
+        <form method="post" action="{% url 'travel:add_review' object.pk %}">
+          {% csrf_token %}
+          <div class="row g-2">
+            <div class="col-md-2">{{ review_form.rating }}</div>
+            <div class="col-md-8">{{ review_form.comment }}</div>
+            <div class="col-md-2 d-grid">
+              <button type="submit" class="btn btn-primary">Post Review</button>
+            </div>
+          </div>
+          {% if review_form.errors %}
+          <div class="text-danger small mt-2">{{ review_form.errors }}</div>
+          {% endif %}
+        </form>
+        {% else %}
+        <div class="alert alert-info mb-3">You have already reviewed this place.</div>
+        {% endif %}
+      {% else %}
+      <div class="alert alert-secondary mb-3">
+        Please <a href="{% url 'login' %}">login</a> to add a review.
+      </div>
+      {% endif %}
+
+      {% for review in reviews %}
+      <div class="review-card">
+        <div class="d-flex justify-content-between">
+          <strong>{{ review.user.username }}</strong>
+          <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+        </div>
+        <div class="star-rating mb-1">
+          {% if review.rating >= 1 %}★{% else %}☆{% endif %}
+          {% if review.rating >= 2 %}★{% else %}☆{% endif %}
+          {% if review.rating >= 3 %}★{% else %}☆{% endif %}
+          {% if review.rating >= 4 %}★{% else %}☆{% endif %}
+          {% if review.rating >= 5 %}★{% else %}☆{% endif %}
+          <small class="text-muted">({{ review.rating }}/5)</small>
+        </div>
+        <p class="mb-0 text-break">{{ review.comment }}</p>
+      </div>
+      {% empty %}
+      <p class="text-muted mb-0">No reviews yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% if object.latitude and object.longitude %}
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Location</h5>
+      <div id="placeMap" style="height: 300px;"></div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -34,7 +115,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <form action="{% url 'travel:delete_place' place.id %}" method="post" style="display: inline;">
+        <form action="{% url 'travel:delete_place' object.id %}" method="post" style="display: inline;">
           {% csrf_token %}
           <button type="submit" class="btn btn-danger">Delete</button>
         </form>
@@ -42,5 +123,28 @@
     </div>
   </div>
 </div>
+
+{% if object.latitude and object.longitude %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<script>
+  const placeMap = L.map('placeMap').setView([{{ object.latitude }}, {{ object.longitude }}], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(placeMap);
+  L.marker([{{ object.latitude }}, {{ object.longitude }}]).addTo(placeMap)
+    .bindPopup('<strong>{{ object.place_name|escapejs }}</strong><br>Avg Rating: {{ average_rating|floatformat:1 }}/5');
+</script>
+{% endif %}
 
 {% endblock %}

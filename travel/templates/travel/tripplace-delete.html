@@ -1,0 +1,16 @@
+{% extends "travel/base.html" %}
+{% block body %}
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-body">
+      <h5>Remove Itinerary Item</h5>
+      <p>Remove <strong>{{ object.place.place_name }}</strong> from Day {{ object.day_number }}?</p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Remove</button>
+        <a href="{% url 'travel:trip_detail' object.trip.pk %}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

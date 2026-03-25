@@ -1,0 +1,107 @@
+{% extends "travel/base.html" %}
+{% block body %}
+<div class="container mt-4">
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h4 class="mb-1">{{ object.name }}</h4>
+          <p class="text-muted mb-2">{{ object.description|default:"No description provided." }}</p>
+          <small class="text-muted">Created {{ object.created_at|date:"M d, Y" }}</small>
+        </div>
+        <div>
+          <a href="{% url 'travel:trip_update' object.pk %}" class="btn btn-warning btn-sm">Edit</a>
+          <a href="{% url 'travel:trip_delete' object.pk %}" class="btn btn-danger btn-sm">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">Add Place to Itinerary</div>
+    <div class="card-body">
+      <form method="post" action="{% url 'travel:trip_place_add' object.pk %}" class="row g-2">
+        {% csrf_token %}
+        <div class="col-md-7">{{ trip_place_form.place }}</div>
+        <div class="col-md-3">{{ trip_place_form.day_number }}</div>
+        <div class="col-md-2 d-grid"><button type="submit" class="btn btn-primary">Add</button></div>
+      </form>
+      {% if trip_place_form.errors %}
+      <div class="text-danger small mt-2">{{ trip_place_form.errors }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Itinerary</div>
+    <div class="card-body">
+      {% for day, items in grouped_itinerary.items %}
+      <h6>Day {{ day }}</h6>
+      <ul class="list-group mb-3">
+        {% for item in items %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <a href="{% url 'travel:detail' item.place.pk %}">{{ item.place.place_name }}</a>
+            <small class="d-block text-muted">{{ item.place.get_region_display }}</small>
+          </div>
+          <a href="{% url 'travel:trip_place_delete' item.pk %}" class="btn btn-sm btn-outline-danger">Remove</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% empty %}
+      <p class="text-muted mb-0">No itinerary items yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% if map_points %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Trip Map</h5>
+      <div id="tripMap" style="height: 350px;"></div>
+    </div>
+  </div>
+</div>
+<script>
+  const mapPoints = JSON.parse(document.getElementById('trip-map-points').textContent);
+
+  const map = L.map('tripMap').setView([mapPoints[0].latitude, mapPoints[0].longitude], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  const routeCoordinates = [];
+  mapPoints.forEach((point) => {
+    routeCoordinates.push([point.latitude, point.longitude]);
+    L.marker([point.latitude, point.longitude]).addTo(map)
+      .bindPopup(`<strong>${point.name}</strong><br/>Day ${point.day_number}<br/>Avg Rating: ${Number(point.rating).toFixed(1)}/5`);
+  });
+
+  if (routeCoordinates.length > 1) {
+    L.polyline(routeCoordinates, { color: '#0d6efd', weight: 4, opacity: 0.7 }).addTo(map);
+    map.fitBounds(routeCoordinates, { padding: [30, 30] });
+  }
+</script>
+{{ map_points|json_script:"trip-map-points" }}
+{% else %}
+<div class="container mt-4">
+  <div class="alert alert-secondary mb-0">
+    Map unavailable for this trip. Add places with latitude and longitude to view route.
+  </div>
+</div>
+{% endif %}
+{% endblock %}
