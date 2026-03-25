@@ -5,7 +5,7 @@ from django.template import loader
 from .forms import PlaceForm
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
-
+from django.views.generic.edit import CreateView
 
 # Create your views here.
 # def index(request):
@@ -22,6 +22,7 @@ class IndexClassView(ListView):
     template_name = "travel/index.html"
     context_object_name = "place_list"
 
+
 def place(request):
     return HttpResponse("This is place")
 
@@ -36,6 +37,7 @@ class PlaceDetail(DetailView):
     model = Place
     template_name = "travel/detail.html"
 
+
 def add_place(request):
     form = PlaceForm(request.POST or None)
 
@@ -44,6 +46,17 @@ def add_place(request):
         return redirect("travel:index")
 
     return render(request, "travel/place-form.html", {"form": form})
+
+
+class AddPlace(CreateView):
+    model = Place
+    fields = ["place_name", "place_desc", "estimated_cost", "place_image"]
+    template_name = "travel/place-form.html"
+
+    def form_valid(self, form):
+        form.instance.user_name = self.request.user
+
+        return super().form_valid(form)
 
 
 def update_place(request, id):
@@ -69,7 +82,6 @@ def delete_place(request, id):
 
 def view_place(request):
     return redirect("travel:index")
-
 
 
 def view_place(request):

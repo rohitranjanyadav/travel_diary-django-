@@ -11,7 +11,7 @@ urlpatterns = [
     # /travel-diary/place
     path("place/", views.place, name="place"),
     # add place
-    path("add/", views.add_place, name="add_place"),
+    path("add/", views.AddPlace.as_view(), name="add_place"),
     # edit
     path("update/<int:id>/", views.update_place, name="update_place"),
     # delete place
