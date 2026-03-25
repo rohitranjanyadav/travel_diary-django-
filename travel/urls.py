@@ -5,9 +5,9 @@ from django.urls import path
 app_name = "travel"
 urlpatterns = [
     # /travel-diary/
-    path("", views.index, name="index"),
+    path("", views.IndexClassView.as_view(), name="index"),
     # /travel-diary/:id
-    path("<int:place_id>/", views.detail, name="detail"),
+    path("<int:pk>/", views.PlaceDetail.as_view(), name="detail"),
     # /travel-diary/place
     path("place/", views.place, name="place"),
     # add place

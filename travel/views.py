@@ -3,26 +3,38 @@ from django.http import HttpResponse
 from .models import Place
 from django.template import loader
 from .forms import PlaceForm
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 
 
 # Create your views here.
-def index(request):
-    place_list = Place.objects.all()
-    context = {
-        "place_list": place_list,
-    }
-    return render(request, "travel/index.html", context)
+# def index(request):
+#     place_list = Place.objects.all()
+#     context = {
+#         "place_list": place_list,
+#     }
+#     return render(request, "travel/index.html", context)
 
+
+# Class Based View
+class IndexClassView(ListView):
+    model = Place
+    template_name = "travel/index.html"
+    context_object_name = "place_list"
 
 def place(request):
     return HttpResponse("This is place")
 
 
-def detail(request, place_id):
-    place = get_object_or_404(Place, pk=place_id)
-    context = {"place": place}
-    return render(request, "travel/detail.html", context)
+# def detail(request, place_id):
+#     place = get_object_or_404(Place, pk=place_id)
+#     context = {"place": place}
+#     return render(request, "travel/detail.html", context)
 
+
+class PlaceDetail(DetailView):
+    model = Place
+    template_name = "travel/detail.html"
 
 def add_place(request):
     form = PlaceForm(request.POST or None)

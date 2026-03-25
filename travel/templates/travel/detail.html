@@ -9,9 +9,9 @@
       </div>
       <div class="col-md-6">
         <div class="card-body">
-          <h5 class="card-title">{{ place.place_name }}</h5>
-          <p class="card-text">{{ place.place_desc }}</p>
-          <p class="card-text"><small class="text-muted">Estimated Cost: Rs. {{ place.estimated_cost }}</small></p>
+          <h5 class="card-title">{{ object.place_name }}</h5>
+          <p class="card-text">{{ object.place_desc }}</p>
+          <p class="card-text"><small class="text-muted">Estimated Cost: Rs. {{ object.estimated_cost }}</small></p>
           <a href="{% url 'travel:update_place' place.id %}" class="btn btn-warning me-2">Edit</a>
           <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
           
@@ -30,7 +30,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        Are you sure you want to delete <strong>{{ place.place_name }}</strong>? This action cannot be undone.
+        Are you sure you want to delete <strong>{{ object.place_name }}</strong>? This action cannot be undone.
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
